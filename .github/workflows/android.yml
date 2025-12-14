@@ -1,17 +1,17 @@
 name: Android CI
 
 on:
-  workflow_dispatch: # Elle tetiklemeyi açar
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4 # v3'tü, v4 yaptık (Güncel)
+    - uses: actions/checkout@v4
     
     - name: set up JDK 17
-      uses: actions/setup-java@v4 # v3'tü, v4 yaptık (Güncel)
+      uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
@@ -20,14 +20,14 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    # BURASI ÖNEMLİ: Release yerine Debug alıyoruz ki şifre istemesin
     - name: Build Debug APK
       run: ./gradlew assembleDebug
 
-    # HATA VEREN KISIM BURASIYDI (DÜZELTİLDİ)
+    # DEĞİŞEN KISIM BURASI
     - name: Upload APK
-      uses: actions/upload-artifact@v4 # v2 idi, v4 yaptık
+      uses: actions/upload-artifact@v4
       with:
-        name: app-debug
-        # Şifreleme adımını sildiğimiz için direkt dosya yolunu veriyoruz
-        path: app/build/outputs/apk/debug/app-debug.apk
+        name: my-app-apk
+        # "app/build/..." yerine aşağıdaki gibi yıldızlı yazıyoruz.
+        # Bu komut "Bütün klasörleri ara ve sonu .apk ile biten her şeyi getir" demektir.
+        path: '**/*.apk'
