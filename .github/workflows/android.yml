@@ -1,19 +1,17 @@
 name: Android CI
 
 on:
-  push:
-    branches: [ "main" , "common" ]
-  workflow_dispatch:
+  workflow_dispatch: # Elle tetiklemeyi açar
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4 # v3'tü, v4 yaptık (Güncel)
+    
     - name: set up JDK 17
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4 # v3'tü, v4 yaptık (Güncel)
       with:
         java-version: '17'
         distribution: 'temurin'
@@ -22,36 +20,14 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build Release APK
-      run: ./gradlew assembleRelease
+    # BURASI ÖNEMLİ: Release yerine Debug alıyoruz ki şifre istemesin
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug
 
-    - uses: r0adkll/sign-android-release@v1
-      name: Sign app APK
-      # ID used to access action output
-      id: sign_app
+    # HATA VEREN KISIM BURASIYDI (DÜZELTİLDİ)
+    - name: Upload APK
+      uses: actions/upload-artifact@v4 # v2 idi, v4 yaptık
       with:
-        releaseDirectory: app/build/outputs/apk/release
-        signingKeyBase64: ${{ secrets.BASE64KEY }}
-        alias: ${{ secrets.ALIAS }}
-        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-        keyPassword: ${{ secrets.KEY_PASSWORD }}
-      env:
-        # override default build-tools version (29.0.3) -- optional
-        BUILD_TOOLS_VERSION: "34.0.0"
-
-    # Example use of `signedReleaseFile` output -- not needed
-    - uses: actions/upload-artifact@v2
-      with:
-        name: Signed app bundle
-        path: ${{steps.sign_app.outputs.signedReleaseFile}}
-
-    - name: Set current date as env variable
-      run: echo "date_now=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-
-    - uses: marvinpinto/action-automatic-releases@latest
-      with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "latest"
-        draft: true
-        title: " Dev Release ${{ env.date_now }}"
-        files: ${{steps.sign_app.outputs.signedReleaseFile}}
+        name: app-debug
+        # Şifreleme adımını sildiğimiz için direkt dosya yolunu veriyoruz
+        path: app/build/outputs/apk/debug/app-debug.apk
